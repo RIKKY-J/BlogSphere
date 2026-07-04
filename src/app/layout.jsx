@@ -11,7 +11,7 @@ export const metadata = {
   title: 'BlogSphere',
   description: 'Discover extraordinary ideas and stories.',
   icons: {
-    icon: '/logo.png',
+    icon: '/logo.svg',
   },
 };
 
