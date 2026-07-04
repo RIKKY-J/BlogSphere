@@ -10,6 +10,9 @@ const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 export const metadata = {
   title: 'BlogSphere',
   description: 'Discover extraordinary ideas and stories.',
+  icons: {
+    icon: '/logo.png',
+  },
 };
 
 export default function RootLayout({ children }) {
