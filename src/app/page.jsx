@@ -17,12 +17,12 @@ export default async function Home() {
   // Safely serialize object IDs for Client rendering if necessary, but we are in Server rendering
   const posts = postsData.map(post => ({
     ...post,
-    _id: post._id.toString(),
-    author: {
+    _id: post._id ? post._id.toString() : '',
+    author: post.author ? {
       ...post.author,
-      _id: post.author._id.toString()
-    },
-    createdAt: new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      _id: post.author._id ? post.author._id.toString() : ''
+    } : { username: 'Unknown Author', _id: '' },
+    createdAt: post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
   }));
 
   const featuredPost = posts.length > 0 ? posts[0] : null;
