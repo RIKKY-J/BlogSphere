@@ -4,15 +4,30 @@ import connectDB from '../lib/db';
 import Post from '../models/Post';
 import User from '../models/User';
 
-const CATEGORIES = ['All', 'Technology', 'Design', 'Business', 'Lifestyle', 'AI & Future'];
+const CATEGORIES = [
+  { name: 'All', slug: 'all' },
+  { name: 'Technology', slug: 'tech' },
+  { name: 'Design', slug: 'design' },
+  { name: 'Business', slug: 'business' },
+  { name: 'Lifestyle', slug: 'lifestyle' }
+];
 
 // Async Server Component
-export default async function Home() {
+export default async function Home({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
+  const activeCategory = resolvedSearchParams?.category || 'all';
+
   await connectDB();
   
+  // Filter by category if one is active
+  const query = {};
+  if (activeCategory !== 'all') {
+    query.category = activeCategory;
+  }
+
   // Fetch real posts from MongoDB, latest first
   // .lean() returns plain JS objects instead of heavy Mongoose documents
-  const postsData = await Post.find().sort({ createdAt: -1 }).populate('author', 'username').lean();
+  const postsData = await Post.find(query).sort({ createdAt: -1 }).populate('author', 'username').lean();
   
   // Safely serialize object IDs for Client rendering if necessary, but we are in Server rendering
   const posts = postsData.map(post => ({
@@ -79,11 +94,19 @@ export default async function Home() {
         
         {/* MAIN FEED */}
         <div className="lg:col-span-3 space-y-10">
-          <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
-            {CATEGORIES.map((cat, i) => (
-              <button key={cat} className={`whitespace-nowrap px-5 py-2 rounded-full font-medium transition-all ${i === 0 ? 'bg-white text-slate-950 shadow-lg' : 'bg-slate-900 border border-white/5 text-slate-400 hover:text-white hover:bg-slate-800'}`}>
-                {cat}
-              </button>
+          <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide font-sans">
+            {CATEGORIES.map((cat) => (
+              <Link
+                href={cat.slug === 'all' ? '/' : `/?category=${cat.slug}`}
+                key={cat.slug}
+                className={`whitespace-nowrap px-5 py-2 rounded-full font-medium transition-all ${
+                  activeCategory === cat.slug
+                    ? 'bg-white text-slate-950 shadow-lg'
+                    : 'bg-slate-900 border border-white/5 text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                {cat.name}
+              </Link>
             ))}
           </div>
 
@@ -119,12 +142,16 @@ export default async function Home() {
             <h3 className="font-heading font-bold text-xl mb-4 text-white">Discover more</h3>
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.slice(1).map(cat => (
-                <span key={cat} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm cursor-pointer transition-colors">
-                  {cat}
-                </span>
+                <Link
+                  href={`/?category=${cat.slug}`}
+                  key={cat.slug}
+                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm cursor-pointer transition-colors"
+                >
+                  {cat.name}
+                </Link>
               ))}
             </div>
-            <Link href="/topics" className="inline-flex items-center gap-1 text-accent-400 text-sm font-medium mt-6 hover:text-accent-300 transition-colors">
+            <Link href="/" className="inline-flex items-center gap-1 text-accent-400 text-sm font-medium mt-6 hover:text-accent-300 transition-colors">
               See all topics <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
